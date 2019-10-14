@@ -1,6 +1,6 @@
-***********************************************************
-				Design of Semantic Analysis 
-***********************************************************
+*******************************************************************************************************************************
+						Design of Semantic Analysis 
+*******************************************************************************************************************************
 
 (*) The program traverses the AST to prepare the Inheritance graph of all classes. We check for inheritance cycles using DFS, which can also detect multiple cycles. In the case of inheritance graph errors, we do not recover, and exit after raising error messages.
 
