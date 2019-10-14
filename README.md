@@ -10,6 +10,7 @@
 			public AST.class_ cls;
 			public HashMap <String, AST.attr> attributeList;
 			public HashMap <String, AST.method> methodList;
+			public int level;
 		}
 
 * Then we build out Scope Table, for which we traverse over all the AST nodes and add the corresponding attributes. Appropriate checks are in place to ensure that all types conform, and variables are in scope.
