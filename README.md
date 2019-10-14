@@ -6,11 +6,11 @@
 
 (*) Then we store the class information in a HashMap. In this, each class name is mapped to an object whose blue-print (class) is as follows.
 
-	public class ClassBlock {
-		public AST.class_ cls;
-		public HashMap <String, AST.attr> attributeList;
-		public HashMap <String, AST.method> methodList;
-	}
+>	public class ClassBlock {
+>		public AST.class_ cls;
+>		public HashMap <String, AST.attr> attributeList;
+>		public HashMap <String, AST.method> methodList;
+>	}
 
 (*) Then we build out Scope Table, for which we traverse over all the AST nodes and add the corresponding attributes. Appropriate checks are in place to ensure that all types conform, and variables are in scope.
 
