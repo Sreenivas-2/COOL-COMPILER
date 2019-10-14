@@ -51,7 +51,7 @@ public class Semantic {
 			return mthdobjexp.type;
 		}
 		else if(node instanceof AST.object) { 	// test12.cl
-			//System.out.println("entered_object");
+			System.out.println("entered_object");
 			AST.object obj = (AST.object) node;
 			AST.ASTNode newnode = scopeTable.lookUpGlobal(obj.name);
 			if(newnode == null)
@@ -151,64 +151,65 @@ public class Semantic {
 			return a;
 		}
 		else if(node instanceof AST.lt) { //test18.cl
-			//System.out.println("entered_less");
+			// System.out.println("entered_less");
 			AST.lt mthdlt= (AST.lt) node;
 			mthdlt.e1.type = AssignType((AST.ASTNode) mthdlt.e1, paramcls);
 			mthdlt.e2.type = AssignType((AST.ASTNode) mthdlt.e2, paramcls);
 			// if(mthdlt.e1.type.equals("Int") && mthdlt.e2.type.equals("Int"))
-			// 	//System.out.println("No error_less");
+			// System.out.println("No error_less");
 			// else {
 			if(!(mthdlt.e1.type.equals("Int") && mthdlt.e2.type.equals("Int"))) {
 				String err = "non-Int arguments: " + mthdlt.e1.type + " < " + mthdlt.e2.type;
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				////System.out.println("error_less");
+				// System.out.println("error_less");
 			}
 			return "Bool";
 		}
-		else if(node instanceof AST.leq) { //test19.cl
-			//System.out.println("entered_lessequal");
+		else if(node instanceof AST.leq) { // test19.cl
+			// System.out.println("entered_lessequal");
 			AST.leq mthdleq= (AST.leq) node;
 			mthdleq.e1.type = AssignType((AST.ASTNode) mthdleq.e1, paramcls);
 			mthdleq.e2.type = AssignType((AST.ASTNode) mthdleq.e2, paramcls);
 			// if(mthdleq.e1.type.equals("Int") && mthdleq.e2.type.equals("Int"))
-			// 	//System.out.println("No error_lessequal");
+			// System.out.println("No error_lessequal");
 			// else {
 			if(!(mthdleq.e1.type.equals("Int") && mthdleq.e2.type.equals("Int"))) {
 				String err = "non-Int arguments: " + mthdleq.e1.type + " <= " + mthdleq.e2.type;
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				////System.out.println("error_lessequal");
+				// System.out.println("error_lessequal");
 			}
 			return "Bool";
 		}
 		else if(node instanceof AST.new_) {
-			//System.out.println("entered_new");
+			// System.out.println("entered_new");
 			AST.new_ mthdnew= (AST.new_) node;
 			return mthdnew.typeid;
 		}
-		else if(node instanceof AST.loop) { //test20.cl
-			//System.out.println("entered_loop");
+		else if(node instanceof AST.loop) { // test20.cl
+			// System.out.println("entered_loop");
 			AST.loop mthdloop= (AST.loop) node;
 			mthdloop.predicate.type = AssignType((AST.ASTNode) mthdloop.predicate, paramcls);
 			mthdloop.body.type = AssignType((AST.ASTNode) mthdloop.body, paramcls);
 			// if(mthdloop.predicate.type.equals("Bool"))
-			// 	//System.out.println("No error_loop");
+			// System.out.println("No error_loop");
 			// else {
 			if(!(mthdloop.predicate.type.equals("Bool"))) {
 				String err = "Loop condition does not have type Bool.";
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				////System.out.println("error_loop");
+				// System.out.println("error_loop");
 			}
 			return "Object";
 		}
 		else if(node instanceof AST.dispatch) {
-			//System.out.println("entered_dispatch");
+			System.out.println("entered_dispatch");
 			AST.dispatch mthddsptch = (AST.dispatch) node;
+			System.out.println(mthddsptch.caller.type);
 			mthddsptch.caller.type = AssignType((AST.ASTNode) mthddsptch.caller, paramcls);
 			HashMap <String, AST.method> mthds = classData.classBlock.get(mthddsptch.caller.type).methodList;
 			if(!mthds.containsKey(mthddsptch.name)) { //test21.cl
 				String err = "Dispatch to undefined method " + mthddsptch.name + ".";
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				////System.out.println("error_dispatch_nomethod");
+				// System.out.println("error_dispatch_nomethod");
 				return "Object";
 			}
 			if(!(mthddsptch.actuals.size() == mthds.get(mthddsptch.name).formals.size())) { //test22.cl
@@ -223,7 +224,7 @@ public class Semantic {
 				if(!mthddsptch.actuals.get(i).type.equals(mthds.get(mthddsptch.name).formals.get(i).typeid)) { //test23.cl
 					String err = "In call of method " + mthddsptch.name + ", type " + mthddsptch.actuals.get(i).type + " of parameter "  + mthds.get(mthddsptch.name).formals.get(i).name + " does not conform to declared type " + mthds.get(mthddsptch.name).formals.get(i).typeid + ".";
 					reportError(paramcls.filename, paramcls.lineNo, err);
-					////System.out.println("error_dispatch_diffparamtype");
+					// System.out.println("error_dispatch_diffparamtype");
 				}
 			}
 			return mthds.get(mthddsptch.name).typeid;
@@ -298,8 +299,8 @@ public class Semantic {
 		//Write Semantic analyzer code here
 		// Checks whether Inheritance Graph has cycle(s) and abort the program.
 		inheritance = new InheritanceGraph(program);
-		if(inheritance.isCyclic()) {
-			System.exit(1);
+		if(errorFlag || inheritance.isCyclic()) {
+			return;
 		}
 
 		// Creating class block for the basic classes 

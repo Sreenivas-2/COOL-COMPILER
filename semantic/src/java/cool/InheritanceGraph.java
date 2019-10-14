@@ -10,11 +10,13 @@ public class InheritanceGraph {
 	Integer class_size;
 	ArrayList<ArrayList<String>> graph;
 	ArrayList<String> Added_Classes ;
+	ArrayList<String> Inherit_classes; 
 
 	public InheritanceGraph(AST.program programName) {
 		program = programName;
 		ClassReference = new HashMap<String, AST.class_>();
 		graph = new ArrayList< ArrayList<String>> ();
+		Inherit_classes = new ArrayList<String>(Arrays.asList("String","Int","Bool"));
 		ClasstoIndex.put("Object", 0);
 		ClasstoIndex.put("IO", 1);
 		graph.add(new ArrayList<String>());
@@ -30,22 +32,21 @@ public class InheritanceGraph {
 	
 	public ArrayList<String> addClasses() {
 		ArrayList<String> Redefine_classes = new ArrayList<String>(Arrays.asList("Object","IO","String","Int","Bool"));
-		ArrayList<String> Inherit_classes = new ArrayList<String>(Arrays.asList("String","Int","Bool"));
 		for (AST.class_ cls : program.classes) {
 			if (Redefine_classes.contains(cls.name)) {
 				String err = "Redefinition of basic class " + cls.name + ".";
 				Semantic.reportError(cls.filename, cls.lineNo, err);
-				System.exit(1);
+				// System.exit(1);
 			}
 			else if (Inherit_classes.contains(cls.parent)) {
 				String err = "Class " + cls.name + " cannot inherit class " + cls.parent + ".";
 				Semantic.reportError(cls.filename, cls.lineNo, err);
-				System.exit(1);
+				// System.exit(1);
 			}
 			else if (Added_Classes.contains(cls.name)) {
 				String err = "Class " + cls.name + " was previously defined.";
 				Semantic.reportError(cls.filename, cls.lineNo, err);
-				System.exit(1);
+				// System.exit(1);
 			}
 			else {
 				Added_Classes.add(cls.name);
@@ -60,11 +61,13 @@ public class InheritanceGraph {
 	public void addEdges() {
 		for (AST.class_ cls : program.classes) {
 			if (!Added_Classes.contains(cls.parent)) {
-				String err =  "Class " + cls.name + " inherits from an undefined class " + cls.parent + "." ;
-				Semantic.reportError(cls.filename, cls.lineNo, err);
-				System.exit(1);
+				if (!Inherit_classes.contains(cls.parent)) {
+					String err =  "Class " + cls.name + " inherits from an undefined class " + cls.parent + "." ;
+					Semantic.reportError(cls.filename, cls.lineNo, err);
+				}
 			}
-			graph.get(ClasstoIndex.get(cls.parent)).add(cls.name);
+			else
+				graph.get(ClasstoIndex.get(cls.parent)).add(cls.name);
 		}
 	}
 
