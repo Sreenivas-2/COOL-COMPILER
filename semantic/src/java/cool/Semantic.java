@@ -34,6 +34,18 @@ public class Semantic {
 		return;
 	}
 
+	ClassBlock leastCommonAncestor(ClassBlock cls1, ClassBlock cls2) {
+		if (cls1.level == 0)
+			return cls1;
+		if (cls2.level == 0)
+			return cls2;
+	    if (cls1.cls.name.equals(cls2.cls.name))
+	        return cls1;
+	    else if (cls1.level > cls2.level)
+	        return leastCommonAncestor(classData.classBlock.get(cls1.cls.parent), cls2);
+	    return leastCommonAncestor(cls1, classData.classBlock.get(cls2.cls.parent));
+	}
+
 	public String AssignType(AST.ASTNode node, AST.class_ paramcls) {
 		if(node == null) {
 			return "Object";
@@ -51,7 +63,7 @@ public class Semantic {
 			return mthdobjexp.type;
 		}
 		else if(node instanceof AST.object) { 	// test12.cl
-			System.out.println("entered_object");
+			//System.out.println("entered_object");
 			AST.object obj = (AST.object) node;
 			AST.ASTNode newnode = scopeTable.lookUpGlobal(obj.name);
 			if(newnode == null)
@@ -180,6 +192,18 @@ public class Semantic {
 			}
 			return "Bool";
 		}
+		else if(node instanceof AST.eq) { // test19.cl
+			// System.out.println("entered_lessequal");
+			AST.eq mthdeq= (AST.eq) node;
+			mthdeq.e1.type = AssignType((AST.ASTNode) mthdeq.e1, paramcls);
+			mthdeq.e2.type = AssignType((AST.ASTNode) mthdeq.e2, paramcls);
+			ArrayList<String> eqClasses = new ArrayList<String>(Arrays.asList("String","Int","Bool"));
+			if((eqClasses.contains(mthdeq.e1.type) && eqClasses.contains(mthdeq.e2.type) && !(mthdeq.e1.type.equals(mthdeq.e2.type))) || !(!(eqClasses.contains(mthdeq.e1.type)) && !(eqClasses.contains(mthdeq.e2.type)))) {
+				String err = "Illegal comparison with a basic type.";
+				reportError(paramcls.filename, paramcls.lineNo, err);
+			}
+			return "Bool";
+		}
 		else if(node instanceof AST.new_) {
 			// System.out.println("entered_new");
 			AST.new_ mthdnew= (AST.new_) node;
@@ -201,9 +225,8 @@ public class Semantic {
 			return "Object";
 		}
 		else if(node instanceof AST.dispatch) {
-			System.out.println("entered_dispatch");
+			//System.out.println("entered_dispatch");
 			AST.dispatch mthddsptch = (AST.dispatch) node;
-			System.out.println(mthddsptch.caller.type);
 			mthddsptch.caller.type = AssignType((AST.ASTNode) mthddsptch.caller, paramcls);
 			HashMap <String, AST.method> mthds = classData.classBlock.get(mthddsptch.caller.type).methodList;
 			if(!mthds.containsKey(mthddsptch.name)) { //test21.cl
@@ -288,6 +311,49 @@ public class Semantic {
 			}
 			return mthds.get(mthdstdsptch.name).typeid;
 		}
+		else if(node instanceof AST.cond) {
+			//System.out.println("entered_cond");
+			AST.cond mthdcond = (AST.cond) node;
+			mthdcond.predicate.type = AssignType((AST.ASTNode) mthdcond.predicate, paramcls);
+			mthdcond.ifbody.type = AssignType((AST.ASTNode) mthdcond.ifbody, paramcls);
+			mthdcond.elsebody.type = AssignType((AST.ASTNode) mthdcond.elsebody, paramcls);
+			ClassBlock ifBody = classData.classBlock.get(mthdcond.ifbody.type);
+			ClassBlock elseBody = classData.classBlock.get(mthdcond.elsebody.type);
+			ClassBlock clsblck = leastCommonAncestor(ifBody, elseBody);
+			if (clsblck.level == 0)
+				return "Object";
+			return clsblck.cls.name;
+		}
+		else if(node instanceof AST.branch) {
+			//System.out.println("entered_branch");
+			AST.let mthdbranch = (AST.branch) node;
+			scopeTable.enterScope();
+			AST.localvar mthdbranchlv = new AST.localvar(mthdbranch.typeid);
+			scopeTable.insert(mthdbranch.name, (AST.ASTNode) mthdbranchlv);
+			mthdbranch.value.type = AssignType((AST.ASTNode) mthdbranch.value, paramcls);
+			if(!mthdbranch.value.type.equals(mthdbranch.typeid)) {
+				String err = "Inferred type " + mthdlet.value.type + " of initialization of " + mthdlet.name + " does not conform to identifier's declared type " + mthdlet.typeid + ".";
+				reportError(paramcls.filename, paramcls.lineNo, err);
+				////System.out.println("error_let");
+			}
+			mthdlet.body.type = AssignType((AST.ASTNode) mthdlet.body, paramcls);
+			scopeTable.exitScope();
+			return mthdlet.body.type;
+		}
+		else if(node instanceof AST.typcase) {
+			//System.out.println("entered_typcase");
+			AST.typcase mthdtypcase = (AST.typcase) node;
+			mthdtypcase.predicate.type = AssignType((AST.ASTNode) mthdtypcase.predicate, paramcls);
+			ClassBlock clsblck = classData.classBlock.get(mthdtypcase.branches.get(0).type);
+			for (AST.branch branch : mthdtypcase.branches) {
+				branch.type = AssignType(branch, paramcls);
+				leastCommonAncestor(clsblck, classData.classBlock.get(branch.type));
+				
+			}
+			if (clsblck.level == 0)
+				return "Object";
+			return clsblck.cls.name;
+		}
 		else
 		{
 			//System.out.println("entered_const");
@@ -320,40 +386,42 @@ public class Semantic {
 		scopeTable = new ScopeTable<AST.ASTNode>();
 
 		for (AST.class_ cls : program.classes) {
-			scopeTable.insert(cls.name, (AST.ASTNode) cls);
-			scopeTable.enterScope();
-			for (AST.feature clsft : cls.features) {
-				String name = "";
-				if (clsft instanceof AST.attr) {
-					name = ((AST.attr) clsft).name;
-					scopeTable.insert(name, (AST.ASTNode) clsft);
-					AST.attr attr = (AST.attr) clsft;
-					String attrid = attr.typeid;
-					attr.value.type = AssignType((AST.ASTNode) attr.value, cls);
-					if (!(attrid.equals(attr.value.type))) { //test33.cl
-						String err = "Inferred type " + attr.value.type + " of initialization of attribute " + attr.name + " does not conform to declared type " + attrid + ".";
-						reportError(cls.name, cls.lineNo, err);
+			if (!basicClasses.contains(cls.name)) {
+				scopeTable.insert(cls.name, (AST.ASTNode) cls);
+				scopeTable.enterScope();
+				for (AST.feature clsft : cls.features) {
+					String name = "";
+					if (clsft instanceof AST.attr) {
+						name = ((AST.attr) clsft).name;
+						scopeTable.insert(name, (AST.ASTNode) clsft);
+						AST.attr attr = (AST.attr) clsft;
+						String attrid = attr.typeid;
+						attr.value.type = AssignType((AST.ASTNode) attr.value, cls);
+						if (!(attrid.equals(attr.value.type))) { //test33.cl
+							String err = "Inferred type " + attr.value.type + " of initialization of attribute " + attr.name + " does not conform to declared type " + attrid + ".";
+							reportError(cls.filename, cls.lineNo, err);
+						}
+					}
+					else {
+						name = ((AST.method) clsft).name;
+						scopeTable.insert(name, (AST.ASTNode) clsft);
+						AST.method mthd = (AST.method) clsft;
+						scopeTable.enterScope();
+						for (AST.formal param : mthd.formals) {
+							scopeTable.insert(param.name, (AST.ASTNode) param);
+						}
+						//
+						String mthdid = mthd.typeid;
+						mthd.body.type = AssignType((AST.ASTNode) mthd.body, cls);
+						scopeTable.exitScope();
+						if (!(mthdid.equals(mthd.body.type))) {	//test34.cl
+							String err = "Inferred return type " + mthd.body.type + " of method " + name + " does not conform to declared return type " + mthdid + ".";
+							reportError(cls.filename, cls.lineNo, err);
+						}
 					}
 				}
-				else {
-					name = ((AST.method) clsft).name;
-					scopeTable.insert(name, (AST.ASTNode) clsft);
-					AST.method mthd = (AST.method) clsft;
-					scopeTable.enterScope();
-					for (AST.formal param : mthd.formals) {
-						scopeTable.insert(param.name, (AST.ASTNode) param);
-					}
-					//
-					String mthdid = mthd.typeid;
-					mthd.body.type = AssignType((AST.ASTNode) mthd.body, cls);
-					scopeTable.exitScope();
-					if (!(mthdid.equals(mthd.body.type))) {	//test34.cl
-						String err = "Inferred return type " + mthd.body.type + " of method " + name + " does not conform to declared return type " + mthdid + ".";
-						reportError(cls.name, cls.lineNo, err);
-					}
-				}
+				scopeTable.exitScope();
 			}
-			scopeTable.exitScope();
 		}
 
 		boolean check1 = false;
@@ -381,5 +449,6 @@ public class Semantic {
 			errorFlag = true;
 		}
 
+		program.classes.removeAll(Arrays.asList(inheritance.ClassReference.get("IO"),inheritance.ClassReference.get("String"),inheritance.ClassReference.get("Int"),inheritance.ClassReference.get("Bool")));
 	}
 }

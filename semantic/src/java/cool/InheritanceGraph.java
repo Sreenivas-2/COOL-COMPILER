@@ -11,12 +11,13 @@ public class InheritanceGraph {
 	ArrayList<ArrayList<String>> graph;
 	ArrayList<String> Added_Classes ;
 	ArrayList<String> Inherit_classes; 
-
+	ArrayList<String> Redefine_classes;
 	public InheritanceGraph(AST.program programName) {
 		program = programName;
 		ClassReference = new HashMap<String, AST.class_>();
 		graph = new ArrayList< ArrayList<String>> ();
 		Inherit_classes = new ArrayList<String>(Arrays.asList("String","Int","Bool"));
+		Redefine_classes = new ArrayList<String>(Arrays.asList("Object","IO","String","Int","Bool"));
 		ClasstoIndex.put("Object", 0);
 		ClasstoIndex.put("IO", 1);
 		graph.add(new ArrayList<String>());
@@ -27,11 +28,28 @@ public class InheritanceGraph {
 		Added_Classes.add("Object");	
 		Added_Classes.add("IO");
 		addClasses();
+		AST.class_ IO = new AST.class_("IO", "", "Object", new ArrayList<AST.feature>(Arrays.asList(
+            new AST.method("out_string", new ArrayList<AST.formal>(Arrays.asList(new AST.formal("x", "String", 0))), "SELF_TYPE",(AST.expression) new AST.no_expr(0), 0),
+            (AST.feature) new AST.method("out_int", new ArrayList<AST.formal>(Arrays.asList(new AST.formal("x", "Int", 0))), "SELF_TYPE",(AST.expression) new AST.no_expr(0), 0),
+            (AST.feature) new AST.method("in_string", new ArrayList<AST.formal>(), "String",(AST.expression) new AST.no_expr(0), 0),
+            (AST.feature) new AST.method("in_int", new ArrayList<AST.formal>(), "Int",(AST.expression) new AST.no_expr(0), 0)
+        )), 0);
+
+		AST.class_ Int = new AST.class_("Int", "", "Object", new ArrayList<AST.feature>(), 0);
+
+		AST.class_ String = new AST.class_("String", "", "Object", new ArrayList<AST.feature>(), 0);
+
+		AST.class_ Bool = new AST.class_("Bool", "", "Object", new ArrayList<AST.feature>(), 0);
+
+
+		program.classes.add(IO);
+		program.classes.add(String);
+		program.classes.add(Int);
+		program.classes.add(Bool);
 		addEdges();
 	}
 	
 	public ArrayList<String> addClasses() {
-		ArrayList<String> Redefine_classes = new ArrayList<String>(Arrays.asList("Object","IO","String","Int","Bool"));
 		for (AST.class_ cls : program.classes) {
 			if (Redefine_classes.contains(cls.name)) {
 				String err = "Redefinition of basic class " + cls.name + ".";
@@ -60,14 +78,16 @@ public class InheritanceGraph {
 
 	public void addEdges() {
 		for (AST.class_ cls : program.classes) {
-			if (!Added_Classes.contains(cls.parent)) {
-				if (!Inherit_classes.contains(cls.parent)) {
-					String err =  "Class " + cls.name + " inherits from an undefined class " + cls.parent + "." ;
-					Semantic.reportError(cls.filename, cls.lineNo, err);
+			if (!Redefine_classes.contains(cls.name)) {
+				if (!Added_Classes.contains(cls.parent)) {
+					if (!Inherit_classes.contains(cls.parent)) {
+						String err =  "Class " + cls.name + " inherits from an undefined class " + cls.parent + "." ;
+						Semantic.reportError(cls.filename, cls.lineNo, err);
+					}
 				}
+				else
+					graph.get(ClasstoIndex.get(cls.parent)).add(cls.name);	
 			}
-			else
-				graph.get(ClasstoIndex.get(cls.parent)).add(cls.name);
 		}
 	}
 
@@ -96,16 +116,18 @@ public class InheritanceGraph {
 		boolean cycle = false;
 		for (AST.class_ cls : program.classes) {
 			ClassReference.put(cls.name, cls);
-			if(isinCyle[ClasstoIndex.get(cls.parent)]) {
-				isinCyle[ClasstoIndex.get(cls.name)] = true;
-				String err = "Class " + cls.name + ", or an ancestor of " + cls.name + ", is involved in an inheritance cycle.";
-				Semantic.reportError(cls.filename, 1, err); 
-			}
-			else if (isCyclicUtil(ClasstoIndex.get(cls.name), visited, recStack)) {
-				cycle = true;
-				isinCyle[ClasstoIndex.get(cls.name)] = true;
-				String err = "Class " + cls.name + ", or an ancestor of " + cls.name + ", is involved in an inheritance cycle.";
-				Semantic.reportError(cls.filename, 1, err); 
+			if (!Redefine_classes.contains(cls.name)) {
+				if(isinCyle[ClasstoIndex.get(cls.parent)]) {
+					isinCyle[ClasstoIndex.get(cls.name)] = true;
+					String err = "Class " + cls.name + ", or an ancestor of " + cls.name + ", is involved in an inheritance cycle.";
+					Semantic.reportError(cls.filename, 1, err); 
+				}
+				else if (isCyclicUtil(ClasstoIndex.get(cls.name), visited, recStack)) {
+					cycle = true;
+					isinCyle[ClasstoIndex.get(cls.name)] = true;
+					String err = "Class " + cls.name + ", or an ancestor of " + cls.name + ", is involved in an inheritance cycle.";
+					Semantic.reportError(cls.filename, 1, err); 
+				}
 			}
 		}
 		if (cycle)

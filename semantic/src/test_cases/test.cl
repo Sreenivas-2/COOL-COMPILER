@@ -1,14 +1,20 @@
-class Main inherits A {
-	a:A <- a;
- main() : IO {{
-	 a.print();
-  }};
+class Main inherits IO {
+  main(): A {
+    case new IO of
+      i:String => new A;
+      j:Int => new C;
+      esac
+  };  
 };
 
-class A inherits IO {
-	io:IO<-io;
- print() : IO {{
-	 io.out_string("A");
-  }};
+class A inherits IO{
+
 };
 
+class B inherits IO{
+  
+};
+
+class C inherits A{
+  
+};
