@@ -24,7 +24,6 @@ public class Semantic {
 	public ArrayList<String> basicClasses = new ArrayList<String>(Arrays.asList("Object","IO","String","Int","Bool"));
 	public void insertClasses(AST.class_ cls, boolean[] visited) {
 		if (visited[inheritance.ClasstoIndex.get(cls.parent)]) {
-			//if (!basicClasses.contains(cls.name))
 			classData.insertClass(cls);
 			visited[inheritance.ClasstoIndex.get(cls.name)] = true;
 			return;
@@ -56,42 +55,35 @@ public class Semantic {
 
 		// If the node is not found then we assign Object as node type.
 		if(node == null) {
-			System.out.println("entered_null");
 			return "Object";
 		}
 
 		// If the node is an instance of a class.
 		else if(node instanceof AST.class_) {
-			System.out.println("entered_class_");
 			AST.class_ mthdclass = (AST.class_) node;
 			return mthdclass.name;
 		}
 
 		// If the node is an instance of an attribute.
 		else if(node instanceof AST.attr) {
-			System.out.println("entered_attr");
 			AST.attr mthdattr = (AST.attr) node;
-			System.out.println(mthdattr.typeid);
 			return mthdattr.typeid;
 		}
 
 		// If the node is an instance of parameter("formal").
 		else if(node instanceof AST.formal) {
-			System.out.println("entered_formal");
 			AST.formal mthdparm = (AST.formal) node;
 			return mthdparm.typeid;
 		}
 
 		// If the node is an instance of localvariable("It is local to the cuurent block").
 		else if(node instanceof AST.localvar) {
-			System.out.println("entered_localvar");
 			AST.localvar mthdobjexp = (AST.localvar) node;
 			return mthdobjexp.type;
 		}
 
 		// If the node is an instance of Object.
-		else if(node instanceof AST.object) { 	// test12.cl
-			System.out.println("entered_object");
+		else if(node instanceof AST.object) {
 			AST.object obj = (AST.object) node;
 
 			// Searching node it in the ScopeTable.
@@ -111,8 +103,7 @@ public class Semantic {
 		}
 
 		// If the node is an instance of plus.
-		else if(node instanceof AST.plus) {  //test13.cl
-			System.out.println("entered_plus");
+		else if(node instanceof AST.plus) {
 			AST.plus mthdpls = (AST.plus) node;
 			mthdpls.e1.type = AssignType((AST.ASTNode) mthdpls.e1, paramcls);
 			mthdpls.e2.type = AssignType((AST.ASTNode) mthdpls.e2, paramcls);
@@ -128,8 +119,7 @@ public class Semantic {
 		}
 
 		// If the node is an instance of sub.
-		else if(node instanceof AST.sub) { //test14.cl
-			System.out.println("entered_sub");
+		else if(node instanceof AST.sub) { 
 			AST.sub mthdsub = (AST.sub) node;
 			mthdsub.e1.type = AssignType((AST.ASTNode) mthdsub.e1, paramcls);
 			mthdsub.e2.type = AssignType((AST.ASTNode) mthdsub.e2, paramcls);
@@ -145,8 +135,7 @@ public class Semantic {
 		}
 
 		// If the node is an instance of mul.
-		else if(node instanceof AST.mul) { //test15.cl
-			System.out.println("entered_mul");
+		else if(node instanceof AST.mul) {
 			AST.mul mthdmul = (AST.mul) node;
 			mthdmul.e1.type = AssignType((AST.ASTNode) mthdmul.e1, paramcls);
 			mthdmul.e2.type = AssignType((AST.ASTNode) mthdmul.e2, paramcls);
@@ -161,8 +150,7 @@ public class Semantic {
 		}
 
 		// If the node is an instance of divide.
-		else if(node instanceof AST.divide) { //test16.cl
-			System.out.println("entered_divide");
+		else if(node instanceof AST.divide) {
 			AST.divide mthddvd = (AST.divide) node;
 			mthddvd.e1.type = AssignType((AST.ASTNode) mthddvd.e1, paramcls);
 			mthddvd.e2.type = AssignType((AST.ASTNode) mthddvd.e2, paramcls);
@@ -178,14 +166,12 @@ public class Semantic {
 		}
 
 		// If the node is an instance of assign.
-		else if(node instanceof AST.assign) { //test17.cl 		referred as : " A <- B "
-			System.out.println("entered_assign");
+		else if(node instanceof AST.assign) { 	// 		referred as : " A <- B "
 			AST.assign mthdassgn = (AST.assign) node;
 			AST.ASTNode newnode = scopeTable.lookUpGlobal(mthdassgn.name);
 			String a = AssignType(newnode, paramcls);
 			mthdassgn.e1.type = AssignType((AST.ASTNode) mthdassgn.e1, paramcls);
 
-			System.out.println(newnode);
 			// if node is not found throw an error
 			if(newnode == null) {
 				String err =  "Assignment to undeclared variable " + mthdassgn.name + ".";
@@ -206,15 +192,13 @@ public class Semantic {
 		}
 
 		// If the node is an instance of block.
-		else if(node instanceof AST.block) { 
-			System.out.println("entered_block");
+		else if(node instanceof AST.block) {
 			AST.block mthdblck = (AST.block) node;
 			String a = "";
 
 			// Traversing over all the expressions inside the block.
 			for (AST.expression exp : mthdblck.l1) {
 				AST.ASTNode newnode = (AST.ASTNode) exp;
-				System.out.println("kk");
 				a = AssignType(newnode, paramcls);
 				exp.type = a;
 			}
@@ -224,8 +208,7 @@ public class Semantic {
 		}
 
 		// If the node is an instance of lessthan.
-		else if(node instanceof AST.lt) { //test18.cl
-			System.out.println("entered_less");
+		else if(node instanceof AST.lt) {
 			AST.lt mthdlt = (AST.lt) node;
 			mthdlt.e1.type = AssignType((AST.ASTNode) mthdlt.e1, paramcls);
 			mthdlt.e2.type = AssignType((AST.ASTNode) mthdlt.e2, paramcls);
@@ -241,8 +224,7 @@ public class Semantic {
 		}
 
 		// If the node is an instance of lessthanequal.
-		else if(node instanceof AST.leq) { // test19.cl
-			System.out.println("entered_lessequal");
+		else if(node instanceof AST.leq) {
 			AST.leq mthdleq = (AST.leq) node;
 			mthdleq.e1.type = AssignType((AST.ASTNode) mthdleq.e1, paramcls);
 			mthdleq.e2.type = AssignType((AST.ASTNode) mthdleq.e2, paramcls);
@@ -259,8 +241,7 @@ public class Semantic {
 		}
 
 		// If the node is an instance of equal.
-		else if(node instanceof AST.eq) { // test19.cl  referred as ' A = B '
-			System.out.println("entered_equal");
+		else if(node instanceof AST.eq) { //   referred as ' A = B '
 			AST.eq mthdeq = (AST.eq) node;
 			mthdeq.e1.type = AssignType((AST.ASTNode) mthdeq.e1, paramcls);
 			mthdeq.e2.type = AssignType((AST.ASTNode) mthdeq.e2, paramcls);
@@ -280,7 +261,6 @@ public class Semantic {
 
 		// If the node is an instance of new.
 		else if(node instanceof AST.new_) {//			referred as ' new A '
-			System.out.println("new");
 			AST.new_ mthdnew = (AST.new_) node;
 
 			// If class is not present in the AST throw an error and return type as Object.
@@ -295,8 +275,7 @@ public class Semantic {
 		}
 
 		// If the node is an instance of loop.
-		else if(node instanceof AST.loop) { // test20.cl
-			System.out.println("entered_loop");
+		else if(node instanceof AST.loop) { 
 			AST.loop mthdloop = (AST.loop) node;
 			mthdloop.predicate.type = AssignType((AST.ASTNode) mthdloop.predicate, paramcls);
 			mthdloop.body.type = AssignType((AST.ASTNode) mthdloop.body, paramcls);
@@ -313,18 +292,11 @@ public class Semantic {
 
 		// If the node is an instance of dispatch.
 		else if(node instanceof AST.dispatch) {
-			System.out.println("entered_dispatch");
 			AST.dispatch mthddsptch = (AST.dispatch) node;
-			System.out.println(mthddsptch.caller);
-			System.out.println(mthddsptch.name);
-			System.out.println(mthddsptch.caller.type);
 			mthddsptch.caller.type = AssignType((AST.ASTNode) mthddsptch.caller, paramcls);
-			System.out.println("this");
-			System.out.println(mthddsptch.caller.type);
 
 			// Throw an error if the caller is not well defined.
 			if(!mthddsptch.caller.type.equals("Object") && !(program.classes.contains(inheritance.ClassReference.get(mthddsptch.caller.type)))){
-				System.out.println("this1");
 				String err = "Dispatch on undefined class " + mthddsptch.caller.type + ".";
 				reportError(paramcls.filename, paramcls.lineNo, err);
 				return "Object";
@@ -333,16 +305,14 @@ public class Semantic {
 			HashMap <String, AST.method> mthds = classData.classBlock.get(mthddsptch.caller.type).methodList;
 
 			// Throw an error if the caller has no such method.
-			if(!mthds.containsKey(mthddsptch.name)) { //test21.cl
-				System.out.println("this2");
+			if(!mthds.containsKey(mthddsptch.name)) { 
 				String err = "Dispatch to undefined method " + mthddsptch.name + ".";
 				reportError(paramcls.filename, paramcls.lineNo, err);
 				return "Object";
 			}
 
 			// Throw an error if the caller invokes method with wrong number of parameters.
-			if(!(mthddsptch.actuals.size() == mthds.get(mthddsptch.name).formals.size())) { //test22.cl
-				System.out.println("this3");
+			if(!(mthddsptch.actuals.size() == mthds.get(mthddsptch.name).formals.size())) { 
 				String err = "Method " + mthddsptch.name + " called with wrong number of arguments.";
 				reportError(paramcls.filename, paramcls.lineNo, err);
 				return mthds.get(mthddsptch.name).typeid;
@@ -352,9 +322,8 @@ public class Semantic {
 				mthddsptch.actuals.get(i).type = AssignType((AST.ASTNode) mthddsptch.actuals.get(i), paramcls);
 				ClassBlock c1 = classData.classBlock.get(mthddsptch.actuals.get(i).type);
 				ClassBlock c2 = classData.classBlock.get(mthds.get(mthddsptch.name).formals.get(i).typeid);
-				System.out.println("this4");
 				// Throw an error if the caller invokes method with wrong parameter type.
-				if(!(c2 == leastCommonAncestor(c1, c2))) {		// test23.cl
+				if(!(c2 == leastCommonAncestor(c1, c2))) {	
 					String err = "In call of method " + mthddsptch.name + ", type " + mthddsptch.actuals.get(i).type + " of parameter "  + mthds.get(mthddsptch.name).formals.get(i).name + " does not conform to declared type " + mthds.get(mthddsptch.name).formals.get(i).typeid + ".";
 					reportError(paramcls.filename, paramcls.lineNo, err);
 				}
@@ -363,8 +332,7 @@ public class Semantic {
 		}
 
 		// If the node is an instance of let.
-		else if(node instanceof AST.let) { //test24.cl
-			System.out.println("entered_let");
+		else if(node instanceof AST.let) {
 			AST.let mthdlet = (AST.let) node;
 			scopeTable.enterScope();
 			AST.localvar mthdletlv = new AST.localvar(mthdlet.typeid);
@@ -385,28 +353,26 @@ public class Semantic {
 
 		// If the node is an instance of static_dispatch.
 		else if(node instanceof AST.static_dispatch) {
-			System.out.println("entered_static_dispatch");
 			AST.static_dispatch mthdstdsptch = (AST.static_dispatch) node;
 			HashMap <String, AST.method> mthds = classData.classBlock.get(mthdstdsptch.typeid).methodList;
 			mthdstdsptch.caller.type = AssignType((AST.ASTNode) mthdstdsptch.caller, paramcls);
-			System.out.println(mthdstdsptch.caller.type);
 			AST.class_ cls = inheritance.ClassReference.get(mthdstdsptch.caller.type);
 
 			ClassBlock a1 = classData.classBlock.get(mthdstdsptch.caller.type);
 			ClassBlock a2 = classData.classBlock.get(mthdstdsptch.typeid);
 
-			if(!(a2 == leastCommonAncestor(a1, a2))) {	//test25.cl
+			if(!(a2 == leastCommonAncestor(a1, a2))) {	
 				String err = "Expression type "+ cls.name + " does not conform to declared static dispatch type " + mthdstdsptch.typeid + ".";
 				reportError(paramcls.filename, paramcls.lineNo, err);					
 				return "Object";
 			}
 			
-			if(!mthds.containsKey(mthdstdsptch.name)) { //test26.cl
+			if(!mthds.containsKey(mthdstdsptch.name)) {
 				String err = "Static dispatch to undefined method " + mthdstdsptch.name + ".";
 				reportError(paramcls.filename, paramcls.lineNo, err);
 				return "Object";
 			}
-			if(!(mthdstdsptch.actuals.size() == mthds.get(mthdstdsptch.name).formals.size())) { //test27.cl
+			if(!(mthdstdsptch.actuals.size() == mthds.get(mthdstdsptch.name).formals.size())) { 
 				String err = "Method " + mthdstdsptch.name + " invoked with wrong number of arguments.";
 				reportError(paramcls.filename, paramcls.lineNo, err);
 				return mthds.get(mthdstdsptch.name).typeid;
@@ -416,7 +382,7 @@ public class Semantic {
 				mthdstdsptch.actuals.get(i).type = AssignType((AST.ASTNode) mthdstdsptch.actuals.get(i), paramcls);
 				ClassBlock c1 = classData.classBlock.get(mthdstdsptch.actuals.get(i).type);
 				ClassBlock c2 = classData.classBlock.get(mthds.get(mthdstdsptch.name).formals.get(i).typeid);
-				if(!(c2 == leastCommonAncestor(c1, c2))) {	//test28.cl
+				if(!(c2 == leastCommonAncestor(c1, c2))) {	
 					String err = "In call of method " + mthdstdsptch.name + ", type " + mthdstdsptch.actuals.get(i).type + " of parameter " + mthds.get(mthdstdsptch.name).formals.get(i).name +" does not conform to declared type " + mthds.get(mthdstdsptch.name).formals.get(i).typeid + ".";
 					reportError(paramcls.filename, paramcls.lineNo, err);
 				}
@@ -426,7 +392,6 @@ public class Semantic {
 
 		// If the node is an instance of conditionals.
 		else if(node instanceof AST.cond) {
-			System.out.println("entered_cond");
 			AST.cond mthdcond = (AST.cond) node;
 			mthdcond.predicate.type = AssignType((AST.ASTNode) mthdcond.predicate, paramcls);
 			mthdcond.ifbody.type = AssignType((AST.ASTNode) mthdcond.ifbody, paramcls);
@@ -439,31 +404,33 @@ public class Semantic {
 			return clsblck.cls.name;
 		}
 
-		// If the node is an instance of branch.
-		else if(node instanceof AST.branch) {
-			System.out.println("entered_branch");
-			AST.branch mthdbranch = (AST.branch) node;
-			scopeTable.enterScope();
-			AST.localvar mthdbranchlv = new AST.localvar(mthdbranch.type);
-			scopeTable.insert(mthdbranch.name, (AST.ASTNode) mthdbranchlv);
-			mthdbranch.value.type = AssignType((AST.ASTNode) mthdbranch.value, paramcls);
-			scopeTable.exitScope();
-			return mthdbranch.value.type;
-		}
-
 		// If the node is an instance of typecase.
 		else if(node instanceof AST.typcase) {
-			System.out.println("entered_typcase");
 			AST.typcase mthdtypcase = (AST.typcase) node;
 			mthdtypcase.predicate.type = AssignType((AST.ASTNode) mthdtypcase.predicate, paramcls);
-			mthdtypcase.branches.get(0).type = AssignType(mthdtypcase.branches.get(0), paramcls);
 			ClassBlock clsblck = classData.classBlock.get(mthdtypcase.branches.get(0).type);
-			for (AST.branch branch : mthdtypcase.branches) {
-				String a = AssignType(branch, paramcls);
-				System.out.println(a);
-				clsblck = leastCommonAncestor(clsblck, classData.classBlock.get(a));
+			String type = mthdtypcase.branches.get(0).type;
+			for (int i = 1; i < mthdtypcase.branches.size(); i++) {
+				AST.branch branch = mthdtypcase.branches.get(i);
+
+
+				if(!classData.classBlock.containsKey(branch.type)) {
+			 		String err = "Class " + branch.type + " of case branch is undefined.";
+			 		reportError(paramcls.filename, paramcls.lineNo, err);
+		 		}
+
+
+				if (type.equals(branch.type) ) {
+					String err = "Duplicate branch " + type + " in case statement.";
+					reportError(paramcls.filename, paramcls.lineNo, err);
+					type = branch.type;
+				}
+				clsblck = leastCommonAncestor(clsblck, classData.classBlock.get(branch.type));
+
 				
 			}
+
+
 			if (clsblck.level == 0)
 				return "Object";
 			return clsblck.cls.name;
@@ -471,13 +438,11 @@ public class Semantic {
 
 		// If the node is an instance of no_expression.
 		else if(node instanceof AST.no_expr) {
-			System.out.println("entered_no_expr");
 			return "_no_type";
 		}
 
 		// If the node is an instance of negative.
 		else if(node instanceof AST.neg) {
-			System.out.println("entered_neg");
 			AST.neg mthdneg = (AST.neg) node;
 			mthdneg.e1.type = AssignType((AST.ASTNode) mthdneg.e1, paramcls);
 
@@ -491,7 +456,6 @@ public class Semantic {
 
 		// If the node is an instance of complimnet.
 		else if(node instanceof AST.comp) {
-			System.out.println("entered_neg");
 			AST.comp mthdcomp = (AST.comp) node;
 			mthdcomp.e1.type = AssignType((AST.ASTNode) mthdcomp.e1, paramcls);
 
@@ -504,7 +468,6 @@ public class Semantic {
 
 		// If the node is an instance of isvoid.
 		else if(node instanceof AST.isvoid) {
-			System.out.println("entered_neg");
 			AST.isvoid mthdisvoid = (AST.isvoid) node;
 			mthdisvoid.e1.type = AssignType((AST.ASTNode) mthdisvoid.e1, paramcls);	
 			return "Bool";
@@ -513,7 +476,6 @@ public class Semantic {
 		// If the node is an instance of constant{"int_const","string_const","bool_const",}.
 		else
 		{
-			System.out.println("entered_const");
 			return ((AST.expression) node).type;
 		}
 	}
@@ -571,8 +533,9 @@ public class Semantic {
 						else if(!attr.value.type.equals("_no_type")){
 							ClassBlock c1 = classData.classBlock.get(attrid);
 							ClassBlock c2 = classData.classBlock.get(attr.value.type);
+
 							// Checking if the assigned and declared types of attribute match. 
-							if (!(c1 == leastCommonAncestor(c1, c2))) {	//test33.cl
+							if (!(c1 == leastCommonAncestor(c1, c2))) {	
 								String err = "Inferred type " + attr.value.type + " of initialization of attribute " + attr.name + " does not conform to declared type " + attrid + ".";
 								reportError(cls.filename, cls.lineNo, err);
 							}
@@ -590,7 +553,7 @@ public class Semantic {
 						for (AST.formal param : mthd.formals) {
 							scopeTable.insert(param.name, (AST.ASTNode) param);
 						}
-						//
+						
 						String mthdid = mthd.typeid;
 
 						//	Assigning type to the method.
@@ -637,8 +600,8 @@ public class Semantic {
 				
 			}
 			if (!check) {
-				System.out.println("No 'main' method in class Main.");
-				errorFlag = true;
+				String err = "No 'main' method in class Main.";
+				reportError(cls.filename, cls.lineNo, err);
 			}
 		}
 

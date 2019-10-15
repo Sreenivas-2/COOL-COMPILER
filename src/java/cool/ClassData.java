@@ -94,17 +94,17 @@ public class ClassData {
 					// Check whether the method is overloaded.
 					if (classBlock.get(cls.parent).methodList.containsKey(newMthd.name)) {
 						AST.method initMthd = classBlock.get(cls.parent).methodList.get(newMthd.name);
-						if (initMthd.formals.size() != newMthd.formals.size()) {
+						if (!(initMthd.typeid.equals(newMthd.typeid))){
+							String err = "In redefined method " + newMthd.name + ", return type " + newMthd.typeid + " is different from original return type " + initMthd.typeid + ".";
+							Semantic.reportError(cls.filename, newMthd.lineNo, err);
+							error = true;
+						}
+						else if (initMthd.formals.size() != newMthd.formals.size()) {
 							String err = "Incompatible number of formal parameters in redefined method " + newMthd.name + ".";
 							Semantic.reportError(cls.filename, newMthd.lineNo, err);
 							error = true;
 						}
 						else {
-							if (!(initMthd.typeid.equals(newMthd.typeid))) {
-								String err = "In redefined method print, return type " + newMthd.typeid + " is different from original return type " + initMthd.typeid + ".";
-								Semantic.reportError(cls.filename, newMthd.lineNo, err);
-								error = true;
-							}
 							for (Integer i = 0; i < initMthd.formals.size(); i++) {
 								if (!(initMthd.formals.get(i).typeid.equals(newMthd.formals.get(i).typeid))) {
 									String err = "In redefined method " + newMthd.name + ", parameter type " + newMthd.formals.get(i).typeid + " is different from original type " + initMthd.formals.get(i).typeid + ".";

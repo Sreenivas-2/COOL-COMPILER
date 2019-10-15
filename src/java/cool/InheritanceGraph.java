@@ -12,6 +12,8 @@ public class InheritanceGraph {
 	ArrayList<String> Added_Classes ;
 	ArrayList<String> Inherit_classes; 
 	ArrayList<String> Redefine_classes;
+
+	// Constructor builds the graph such that class A is parent of class B iff class B inherits class A.
 	public InheritanceGraph(AST.program programName) {
 		program = programName;
 		ClassReference = new HashMap<String, AST.class_>();
@@ -49,23 +51,25 @@ public class InheritanceGraph {
 		addEdges();
 	}
 	
+	// Function to add classes to Vertex set.
 	public ArrayList<String> addClasses() {
 		for (AST.class_ cls : program.classes) {
+			// Check whether basic classes are redifined.
 			if (Redefine_classes.contains(cls.name)) {
 				String err = "Redefinition of basic class " + cls.name + ".";
 				Semantic.reportError(cls.filename, cls.lineNo, err);
-				// System.exit(1);
 			}
+			// Check whether classes donot inherit from String, Int and Bool.
 			else if (Inherit_classes.contains(cls.parent)) {
 				String err = "Class " + cls.name + " cannot inherit class " + cls.parent + ".";
 				Semantic.reportError(cls.filename, cls.lineNo, err);
-				// System.exit(1);
 			}
+			// Check whether class is previously defined.
 			else if (Added_Classes.contains(cls.name)) {
 				String err = "Class " + cls.name + " was previously defined.";
 				Semantic.reportError(cls.filename, cls.lineNo, err);
-				// System.exit(1);
 			}
+			// Add the node to the Vertex Set.
 			else {
 				Added_Classes.add(cls.name);
 				ClasstoIndex.put(cls.name, class_size);
@@ -76,6 +80,7 @@ public class InheritanceGraph {
 		return Added_Classes;
 	}
 
+	// Function to add edge between parent and child classes.
 	public void addEdges() {
 		for (AST.class_ cls : program.classes) {
 			if (!Redefine_classes.contains(cls.name)) {
@@ -91,8 +96,7 @@ public class InheritanceGraph {
 		}
 	}
 
-
-	//change names for dfs method
+	// Function to check whether a particular class is involved in cycle.
 	public boolean isCyclicUtil(int i, boolean[] visited,boolean[] recStack) {
 		if (recStack[i]) 
 			return true; 
@@ -108,7 +112,7 @@ public class InheritanceGraph {
 		return false; 
 	}
 
-
+	// Function to report all cycles in Inheritance graph.
 	public boolean isCyclic() {
 		boolean[] visited = new boolean [class_size]; 
 		boolean[] recStack = new boolean [class_size]; 
