@@ -47,10 +47,11 @@
 
 ## Code Structure:
 
-* Inheritance task is checked in Inheritance.java
-* Class to store the information of class is defined in ClassBlock.java
+* Analysis related to Inheritance is performed in Inheritance.java
+* Blue-print to store the information of class is defined in ClassBlock.java
 * Information of all defined and basic classes are added to a HashMap in ClassData.java
-* Scoping and Type Checking are done in Semantic.java itself, also, the presence of Main class and main method in it, are verified in Semantic.java at the end.
+* Scoping and Type Checking are done in Semantic.java itself.
+* Also, the presence of Main class and main method in Main class, are verified in Semantic.java at the end of our analysis.
 
 ## Test Cases:
 Several Test cases are written to verify each possible semantic error. They are as follows:
