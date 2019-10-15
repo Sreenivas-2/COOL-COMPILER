@@ -5,7 +5,11 @@
 * Semantic analysis is divided into multiple sub-tasks as follows.
 
 * Inheritance: 
-	* We traverse the AST to build the Inheritance graph of all classes.
+	* We traverse the AST to build the Inheritance graph of all classes. Vertices of the graph and its corresponding class is mapped using HashMap.
+			
+			public HashMap<String, Integer> ClasstoIndex;
+			public HashMap<String, AST.class_ > ClassReference;
+	
 	* While adding to the Inheritance graph, we check that Basic classes (Object, IO, String, Int, Bool) are not redefined.
 	* We also check that classes do not inherit from basic classes like String, Int, Bool.
 	* We, then, check that classes are not defined multiple times.
@@ -39,9 +43,12 @@
 	
 * Scoping and Type Checking:
 	* We build out Scope Table, for which we traverse over all the AST nodes.
-	* Based on the instance of the node, types are assigned to the expressions.
-	* Whenever we traverse an AST node, we first enter to its scope, and add the attributes and also check the type of attribute conform (value assigned to the attribute must have same type of attribute or any of its descendants). We raise error if the return type doesnot conform.
-	* We add methods to the present scope and add their corresponding parameters after entering to the scope of the method. We then exit the scope of the method and check whether the return type of method conform. We raise error if the return type doesnot conform.
+	* Based on the instance of the node, types are assigned to the expressions. The prototype of the function that assigns types to expressions is as follows.
+	
+			public String AssignType(AST.ASTNode node, AST.class_ paramcls);
+	
+	* Whenever we traverse an AST.class_ , we first enter to its scope, and add methods to the present scope and add their corresponding parameters after entering to the scope of the method. We then exit the scope of the method and check whether the return type of method conform. We raise error if the return type doesnot conform (value assigned to the attribute must have same type of attribute or any of its descendants).
+	* We add the attributes and also check the type of attribute conform. We raise error if the return type doesnot conform.
 
 * Finally we check whether the Main class is present (we raise an error if it is not present). We also check whether the main method in the Main class.
 
@@ -54,35 +61,8 @@
 * Also, the presence of Main class and main method in Main class, are verified in Semantic.java at the end of our analysis.
 
 ## Test Cases:
-Several Test cases are written to verify each possible semantic error. They are as follows:
-* test1.cl - Redefinition of basic classes.
-* test2.cl - Inheritance of classes String, Int and Bool.
-* test3.cl - Redefining classes which are previously defined.
-* test4.cl - Inheritance of a undefined class.
-* test5.cl - Inheritance cycle.
-* test6.cl - Multiple definitions of attributes in same class.
-* test7.cl - Multiple definitions of methods in same class.
-* test8.cl - Multiple definitions of formal parameters in a method.
-* test9.cl - Incompatible number of parameters while method overriding.
-* test10.cl - Different return type while method overriding.
-* test11.cl - Different parameter type while method overriding.
-* test12.cl - 
-* test13.cl - 
-* test14.cl - 
-* test15.cl - 
-* test16.cl - 
-* test17.cl - 
-* test18.cl - 
-* test19.cl - 
-* test20.cl - 
-* test21.cl - 
-* test22.cl - 
-* test23.cl - 
-* test24.cl - 
-* test25.cl - 
-* test26.cl - 
-* test27.cl - 
-* test28.cl - 
-* test29.cl - 
-* test30.cl - 
-* test31.cl - 
+Several Test cases are written to verify each possible semantic error. Some of the interesting test cases are as follows.
+* Whenever a class is involved in Inheritance cycle, error must be raised under the name of its descendant classes also.
+* In the initialization of attributes, we must consider the use of attributes that are declared later.
+* For attributes with undefined types, raise error and set its type as **Object**.
+* In dispatch, in the place of original formal type, we can even pass object of one of its descendant classes.
