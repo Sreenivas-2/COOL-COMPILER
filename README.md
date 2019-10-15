@@ -63,6 +63,7 @@
 ## Test Cases:
 Several Test cases are written to verify each possible semantic error. Some of the interesting test cases are as follows.
 * Whenever a class is involved in Inheritance cycle, error must be raised under the name of its descendant classes also.
+* When a method has multiply defined formal parameters, the method is not considered as an error one and is added to the method list of class.
 * In the initialization of attributes, we must consider the use of attributes that are declared later.
 * For attributes with undefined types, raise error and set its type as **Object**.
 * In dispatch, in the place of original formal type, we can even pass object of one of its descendant classes.
