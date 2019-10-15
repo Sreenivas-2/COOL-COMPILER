@@ -55,17 +55,23 @@
 	* Whenever we traverse an AST.class_ , we first enter to its scope, and add methods to the present scope and add their corresponding parameters after entering to the scope of the method. We then exit the scope of the method and check whether the return type of method conform. We raise error if the return type doesnot conform (value assigned to the attribute must have same type of attribute or any of its descendants).
 	* We add the attributes and also check the type of attribute conform. We raise error if the return type doesnot conform.
 
-* Finally we check whether the Main class is present (we raise an error if it is not present). We also check whether the main method in the Main class.
+* Finally we check whether the Main class is present. We also check whether the main method in the Main class.  We raise an error if they are not present.
 
 ## Code Structure:
 
-* Analysis related to Inheritance is performed in Inheritance.java
+* Analysis related to Inheritance is performed in InheritanceGraph.java
+	* Constructor of InheritanceGraph.java constructs the graph.
+	* *isCyclic()* checks whether the Inheritance graph has cycle.
 * Blue-print to store the information of class is defined in ClassBlock.java
 * Information of all defined and basic classes are added to a HashMap in ClassData.java
+	* Constructor of ClassData.java information of basic classes - Object, IO, String, Int, Bool into the map.
+	* *insertClass()* adds the class into the map if the class is properly defined.
 * Scoping and Type Checking are done in Semantic.java itself.
+	* *AssgnType()* assigns appropriate types to the given expressions.
+	* *leastCommonAncestor()* returns the ClassBlock of least common ancestor of given classes based on their Inheritance.
 * Also, the presence of Main class and main method in Main class, are verified in Semantic.java at the end of our analysis.
 
-## Test Cases:
+## Test Cases & Observation:
 Several Test cases are written to verify each possible semantic error. Some of the interesting test cases are as follows.
 * Whenever a class is involved in Inheritance cycle, error must be raised under the name of its descendant classes also.
 * When a method has multiply defined formal parameters, error is raised and also the method is added to the methodList of class.
