@@ -100,6 +100,9 @@ public class Semantic {
 			// if node is not found throw an error and assign type as "Object".
 			if(newnode == null)
 			{
+				if(classData.classBlock.get(paramcls.name).attributeList.containsKey(obj.name)) {
+					return classData.classBlock.get(paramcls.name).attributeList.get(obj.name).typeid;
+				}
 				String err = "Undeclared identifier " + obj.name + ".";
 				reportError(paramcls.filename, paramcls.lineNo, err);
 				return "Object";
@@ -316,10 +319,12 @@ public class Semantic {
 			System.out.println(mthddsptch.name);
 			System.out.println(mthddsptch.caller.type);
 			mthddsptch.caller.type = AssignType((AST.ASTNode) mthddsptch.caller, paramcls);
+			System.out.println("this");
 			System.out.println(mthddsptch.caller.type);
 
 			// Throw an error if the caller is not well defined.
 			if(!mthddsptch.caller.type.equals("Object") && !(program.classes.contains(inheritance.ClassReference.get(mthddsptch.caller.type)))){
+				System.out.println("this1");
 				String err = "Dispatch on undefined class " + mthddsptch.caller.type + ".";
 				reportError(paramcls.filename, paramcls.lineNo, err);
 				return "Object";
@@ -329,6 +334,7 @@ public class Semantic {
 
 			// Throw an error if the caller has no such method.
 			if(!mthds.containsKey(mthddsptch.name)) { //test21.cl
+				System.out.println("this2");
 				String err = "Dispatch to undefined method " + mthddsptch.name + ".";
 				reportError(paramcls.filename, paramcls.lineNo, err);
 				return "Object";
@@ -336,6 +342,7 @@ public class Semantic {
 
 			// Throw an error if the caller invokes method with wrong number of parameters.
 			if(!(mthddsptch.actuals.size() == mthds.get(mthddsptch.name).formals.size())) { //test22.cl
+				System.out.println("this3");
 				String err = "Method " + mthddsptch.name + " called with wrong number of arguments.";
 				reportError(paramcls.filename, paramcls.lineNo, err);
 				return mthds.get(mthddsptch.name).typeid;
@@ -345,7 +352,7 @@ public class Semantic {
 				mthddsptch.actuals.get(i).type = AssignType((AST.ASTNode) mthddsptch.actuals.get(i), paramcls);
 				ClassBlock c1 = classData.classBlock.get(mthddsptch.actuals.get(i).type);
 				ClassBlock c2 = classData.classBlock.get(mthds.get(mthddsptch.name).formals.get(i).typeid);
-
+				System.out.println("this4");
 				// Throw an error if the caller invokes method with wrong parameter type.
 				if(!(c2 == leastCommonAncestor(c1, c2))) {		// test23.cl
 					String err = "In call of method " + mthddsptch.name + ", type " + mthddsptch.actuals.get(i).type + " of parameter "  + mthds.get(mthddsptch.name).formals.get(i).name + " does not conform to declared type " + mthds.get(mthddsptch.name).formals.get(i).typeid + ".";

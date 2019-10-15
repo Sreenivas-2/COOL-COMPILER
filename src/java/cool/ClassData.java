@@ -63,7 +63,6 @@ public class ClassData {
 					Semantic.reportError(cls.filename, newAttr.lineNo, err);
 				}
 				else {
-					//System.out.println(c);
 					c.attributeList.put(newAttr.name, newAttr);
 					attr.add(newAttr.name);
 				}
@@ -81,12 +80,12 @@ public class ClassData {
 						if (param.contains(clsparam.name)) {
 							String err = "Formal parameter " + clsparam.name + " is multiply defined.";
 							Semantic.reportError(cls.filename, newMthd.lineNo, err);
-							error = true;
 						}
 						else
 							param.add(clsparam.name);
 					}
 					if (classBlock.get(cls.parent).methodList.containsKey(newMthd.name)) {
+						System.out.println("in");
 						AST.method initMthd = classBlock.get(cls.parent).methodList.get(newMthd.name);
 						if (initMthd.formals.size() != newMthd.formals.size()) {
 							String err = "Incompatible number of formal parameters in redefined method " + newMthd.name + ".";
