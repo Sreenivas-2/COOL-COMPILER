@@ -38,6 +38,11 @@
 		* attributes that are inherited from other class must not be redefined.
 		* parameters within same method must not be multiply defined.
 		* no method overloading.
+	* During method over-riding check, the order of checking is:
+		* check whether the return type is same.
+		* check whether the number of parameters are same.
+		* check whether the types of all formal parameters are same.
+	 * If any of the above check has failed, we raise error and need not check the later (eg, if return type is not same, we raise error and need not check for formal parameters of the method).
 	* If a class is not properly defined, appropriate error messages are raised.
 	* Classes are then added to the HashMap excluding the attributes or methods which are not properly defined as explained above.
 	
