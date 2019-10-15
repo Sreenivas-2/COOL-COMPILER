@@ -17,6 +17,7 @@ public class Semantic {
 	Don't change code above this line
 */
 
+	public AST.program program;
 	public InheritanceGraph inheritance;
 	public ClassData classData;
 	public ScopeTable<AST.ASTNode > scopeTable;
@@ -46,205 +47,282 @@ public class Semantic {
 	    return leastCommonAncestor(cls1, classData.classBlock.get(cls2.cls.parent));
 	}
 
+	/*
+		Method for assigning types to the expressions.
+		Type caste the features into AST.node and send it as a parameter 1.
+		Based on the instance of the node corresponding block in the method is executed.
+	*/
 	public String AssignType(AST.ASTNode node, AST.class_ paramcls) {
+
+		// If the node is not found then we assign Object as node type.
 		if(node == null) {
+			System.out.println("kl");
 			return "Object";
 		}
+
+		// If the node is an instance of an attribute.
 		else if(node instanceof AST.attr) {
+			System.out.println("HI");
 			AST.attr mthdattr = (AST.attr) node;
 			 return mthdattr.typeid;
 		}
+
+		// If the node is an instance of parameter("formal").
 		else if(node instanceof AST.formal) {
+			System.out.println("HI");
 			AST.formal mthdparm = (AST.formal) node;
 			return mthdparm.typeid;
 		}
+
+		// If the node is an instance of localvariable("It is local to the cuurent block").
 		else if(node instanceof AST.localvar) {
+			System.out.println("HI");
 			AST.localvar mthdobjexp = (AST.localvar) node;
 			return mthdobjexp.type;
 		}
+
+		// If the node is an instance of Object.
 		else if(node instanceof AST.object) { 	// test12.cl
-			//System.out.println("entered_object");
+			System.out.println("entered_object");
 			AST.object obj = (AST.object) node;
+
+			// Searching node it in the ScopeTable.
 			AST.ASTNode newnode = scopeTable.lookUpGlobal(obj.name);
+
+			// if node is not found throw an error and assign type as "Object".
 			if(newnode == null)
 			{
 				String err = "Undeclared identifier " + obj.name + ".";
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				////System.out.println("Undeclared_type");
 				return "Object";
 			}
 			return AssignType(newnode, paramcls);
 		}
+
+		// If the node is an instance of plus.
 		else if(node instanceof AST.plus) {  //test13.cl
-			//System.out.println("entered_plus");
+			System.out.println("entered_plus");
 			AST.plus mthdpls = (AST.plus) node;
 			mthdpls.e1.type = AssignType((AST.ASTNode) mthdpls.e1, paramcls);
 			mthdpls.e2.type = AssignType((AST.ASTNode) mthdpls.e2, paramcls);
-			// if(mthdpls.e1.type.equals("Int") && mthdpls.e2.type.equals("Int"))
-			// 	//System.out.println("No error_plus");
-			// else {
+
+			// if any of them is non-Int throw an error.
 			if(!(mthdpls.e1.type.equals("Int") && mthdpls.e2.type.equals("Int"))) {
 				String err = "non-Int arguments: " + mthdpls.e1.type + " + " + mthdpls.e2.type;
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				////System.out.println("error_plus");
 			}
+
+			// Default type is Int.
 			return "Int";
 		}
+
+		// If the node is an instance of sub.
 		else if(node instanceof AST.sub) { //test14.cl
-			//System.out.println("entered_sub");
-			AST.sub mthdsub= (AST.sub) node;
+			System.out.println("entered_sub");
+			AST.sub mthdsub = (AST.sub) node;
 			mthdsub.e1.type = AssignType((AST.ASTNode) mthdsub.e1, paramcls);
 			mthdsub.e2.type = AssignType((AST.ASTNode) mthdsub.e2, paramcls);
-			// if(mthdsub.e1.type.equals("Int") && mthdsub.e2.type.equals("Int"))
-			// 	//System.out.println("No error_sub");
-			// else {
-			 if(!(mthdsub.e1.type.equals("Int") && mthdsub.e2.type.equals("Int"))) {
+
+			// if any of them is non-Int throw an error.
+			if(!(mthdsub.e1.type.equals("Int") && mthdsub.e2.type.equals("Int"))) {
 				String err = "non-Int arguments: " + mthdsub.e1.type + " - " + mthdsub.e2.type;
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				////System.out.println("error_sub");
 			}
+
+			// Default type is Int.
 			return "Int";
 		}
+
+		// If the node is an instance of mul.
 		else if(node instanceof AST.mul) { //test15.cl
-			//System.out.println("entered_mul");
-			AST.mul mthdmul= (AST.mul) node;
+			System.out.println("entered_mul");
+			AST.mul mthdmul = (AST.mul) node;
 			mthdmul.e1.type = AssignType((AST.ASTNode) mthdmul.e1, paramcls);
 			mthdmul.e2.type = AssignType((AST.ASTNode) mthdmul.e2, paramcls);
-			// if(mthdmul.e1.type.equals("Int") && mthdmul.e2.type.equals("Int"))
-			// 	//System.out.println("No error_mul");
-			// else {
+
+			// if any of them is non-Int throw an error.
 			if(!(mthdmul.e1.type.equals("Int") && mthdmul.e2.type.equals("Int"))) {
 				String err = "non-Int arguments: " + mthdmul.e1.type + " * " + mthdmul.e2.type;
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				////System.out.println("error_mul");
 			}
+			// Default type is Int.
 			return "Int";
 		}
+
+		// If the node is an instance of divide.
 		else if(node instanceof AST.divide) { //test16.cl
-			//System.out.println("entered_divide");
-			AST.divide mthddvd= (AST.divide) node;
+			System.out.println("entered_divide");
+			AST.divide mthddvd = (AST.divide) node;
 			mthddvd.e1.type = AssignType((AST.ASTNode) mthddvd.e1, paramcls);
 			mthddvd.e2.type = AssignType((AST.ASTNode) mthddvd.e2, paramcls);
-			// if(mthddvd.e1.type.equals("Int") && mthddvd.e2.type.equals("Int"))
-			// 	//System.out.println("No error_divide");
-			// else {
+
+			// if any of them is non-Int throw an error.
 			if(!(mthddvd.e1.type.equals("Int") && mthddvd.e2.type.equals("Int"))) {
 				String err = "non-Int arguments: " + mthddvd.e1.type + " / " + mthddvd.e2.type;
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				////System.out.println("error_divide");
 			}
+
+			// Default type is Int.
 			return "Int";
 		}
-		else if(node instanceof AST.assign) { //test17.cl
-			//System.out.println("entered_assign");
-			AST.assign mthdassgn= (AST.assign) node;
+
+		// If the node is an instance of assign.
+		else if(node instanceof AST.assign) { //test17.cl 		referred as : " A <- B "
+			System.out.println("entered_assign");
+			AST.assign mthdassgn = (AST.assign) node;
 			AST.ASTNode newnode = scopeTable.lookUpGlobal(mthdassgn.name);
 			String a = AssignType(newnode, paramcls);
 			mthdassgn.e1.type = AssignType((AST.ASTNode) mthdassgn.e1, paramcls);
-			// if(mthdassgn.e1.type.equals(a))
-			// 	//System.out.println("No error_assign");
-			// else{
-			if(!(mthdassgn.e1.type.equals(a))) {
+
+			System.out.println(newnode);
+			// if node is not found throw an error
+			if(newnode == null) {
+				String err =  "Assignment to undeclared variable " + mthdassgn.name + ".";
+				reportError(paramcls.filename, paramcls.lineNo, err);
+				return mthdassgn.e1.type;
+			}
+			ClassBlock c1 = classData.classBlock.get(a);
+			ClassBlock c2 = classData.classBlock.get(mthdassgn.e1.type);
+
+			// Checking if A,B has the LeastCommonAncestor as A in the AST.
+			if(!(c1 == leastCommonAncestor(c1, c2))) {
 				String err = "Type " + mthdassgn.e1.type + " of assigned expression does not conform to declared type " + a + " of identifier " + mthdassgn.name + ".";
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				////System.out.println("error_assign");
 			}
+
+			// Default type is type of B.
 			return mthdassgn.e1.type;
 		}
+
+		// If the node is an instance of block.
 		else if(node instanceof AST.block) { 
-			//System.out.println("entered_block");
-			AST.block mthdblck= (AST.block) node;
+			System.out.println("entered_block");
+			AST.block mthdblck = (AST.block) node;
 			String a = "";
+
+			// Traversing over all the expressions inside the block.
 			for (AST.expression exp : mthdblck.l1) {
 				AST.ASTNode newnode = (AST.ASTNode) exp;
+				System.out.println("kk");
 				a = AssignType(newnode, paramcls);
 				exp.type = a;
 			}
+
+			// Returning the type of last expression in the block.
 			return a;
 		}
+
+		// If the node is an instance of lessthan.
 		else if(node instanceof AST.lt) { //test18.cl
-			// System.out.println("entered_less");
-			AST.lt mthdlt= (AST.lt) node;
+			System.out.println("entered_less");
+			AST.lt mthdlt = (AST.lt) node;
 			mthdlt.e1.type = AssignType((AST.ASTNode) mthdlt.e1, paramcls);
 			mthdlt.e2.type = AssignType((AST.ASTNode) mthdlt.e2, paramcls);
-			// if(mthdlt.e1.type.equals("Int") && mthdlt.e2.type.equals("Int"))
-			// System.out.println("No error_less");
-			// else {
+
+			// if any of them is non-Int throw an error.
 			if(!(mthdlt.e1.type.equals("Int") && mthdlt.e2.type.equals("Int"))) {
 				String err = "non-Int arguments: " + mthdlt.e1.type + " < " + mthdlt.e2.type;
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				// System.out.println("error_less");
 			}
+
+			// Default type is Bool.
 			return "Bool";
 		}
+
+		// If the node is an instance of lessthanequal.
 		else if(node instanceof AST.leq) { // test19.cl
-			// System.out.println("entered_lessequal");
-			AST.leq mthdleq= (AST.leq) node;
+			System.out.println("entered_lessequal");
+			AST.leq mthdleq = (AST.leq) node;
 			mthdleq.e1.type = AssignType((AST.ASTNode) mthdleq.e1, paramcls);
 			mthdleq.e2.type = AssignType((AST.ASTNode) mthdleq.e2, paramcls);
-			// if(mthdleq.e1.type.equals("Int") && mthdleq.e2.type.equals("Int"))
-			// System.out.println("No error_lessequal");
-			// else {
+
+			// if any of them is non-Int throw an error.
 			if(!(mthdleq.e1.type.equals("Int") && mthdleq.e2.type.equals("Int"))) {
 				String err = "non-Int arguments: " + mthdleq.e1.type + " <= " + mthdleq.e2.type;
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				// System.out.println("error_lessequal");
+
 			}
+
+			// Default type is Bool.
 			return "Bool";
 		}
-		else if(node instanceof AST.eq) { // test19.cl
-			// System.out.println("entered_lessequal");
-			AST.eq mthdeq= (AST.eq) node;
+
+		// If the node is an instance of equal.
+		else if(node instanceof AST.eq) { // test19.cl  referred as ' A = B '
+			System.out.println("entered_equal");
+			AST.eq mthdeq = (AST.eq) node;
 			mthdeq.e1.type = AssignType((AST.ASTNode) mthdeq.e1, paramcls);
 			mthdeq.e2.type = AssignType((AST.ASTNode) mthdeq.e2, paramcls);
 			ArrayList<String> eqClasses = new ArrayList<String>(Arrays.asList("String","Int","Bool"));
-			if((eqClasses.contains(mthdeq.e1.type) && eqClasses.contains(mthdeq.e2.type) && !(mthdeq.e1.type.equals(mthdeq.e2.type))) || !(!(eqClasses.contains(mthdeq.e1.type)) && !(eqClasses.contains(mthdeq.e2.type)))) {
-				String err = "Illegal comparison with a basic type.";
-				reportError(paramcls.filename, paramcls.lineNo, err);
+
+			// Checking if A,B are from {"Int","Bool","String"} and don't have same type (OR) Only one of A,B is from {"Int","Bool","String"} throw an error.
+			if (!(mthdeq.e1.type.equals(mthdeq.e2.type))) {
+				if((eqClasses.contains(mthdeq.e1.type) && eqClasses.contains(mthdeq.e2.type)) || (eqClasses.contains(mthdeq.e1.type) && !eqClasses.contains(mthdeq.e2.type)) ||  (!eqClasses.contains(mthdeq.e1.type) && eqClasses.contains(mthdeq.e2.type))) {
+					String err = "Illegal comparison with a basic type.";
+					reportError(paramcls.filename, paramcls.lineNo, err);
+				}
 			}
+
+			// Default type is Bool.
 			return "Bool";
 		}
-		else if(node instanceof AST.new_) {
-			// System.out.println("entered_new");
-			AST.new_ mthdnew= (AST.new_) node;
+
+		// If the node is an instance of new.
+		else if(node instanceof AST.new_) {//			referred as ' new A '
+			System.out.println("new");
+			AST.new_ mthdnew = (AST.new_) node;
+
+			// If class is not present in the AST throw an error and return type as Object.
+			if(!mthdnew.typeid.equals("Object") && !(program.classes.contains(inheritance.ClassReference.get(mthdnew.typeid)))){
+				String err = "'new' used with undefined class " + mthdnew.typeid + ".";
+				reportError(paramcls.filename, paramcls.lineNo, err);
+				return "Object";
+			}
+
+			// Else return type of the A
 			return mthdnew.typeid;
 		}
+
+		// If the node is an instance of loop.
 		else if(node instanceof AST.loop) { // test20.cl
-			// System.out.println("entered_loop");
-			AST.loop mthdloop= (AST.loop) node;
+			System.out.println("entered_loop");
+			AST.loop mthdloop = (AST.loop) node;
 			mthdloop.predicate.type = AssignType((AST.ASTNode) mthdloop.predicate, paramcls);
 			mthdloop.body.type = AssignType((AST.ASTNode) mthdloop.body, paramcls);
-			// if(mthdloop.predicate.type.equals("Bool"))
-			// System.out.println("No error_loop");
-			// else {
+
+			// If predicate type is not bool throw an error.
 			if(!(mthdloop.predicate.type.equals("Bool"))) {
 				String err = "Loop condition does not have type Bool.";
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				// System.out.println("error_loop");
 			}
+
+			//  Default type is Object.
 			return "Object";
 		}
+
+		// If the node is an instance of dispatch.
 		else if(node instanceof AST.dispatch) {
-			//System.out.println("entered_dispatch");
+			System.out.println("entered_dispatch");
 			AST.dispatch mthddsptch = (AST.dispatch) node;
 			mthddsptch.caller.type = AssignType((AST.ASTNode) mthddsptch.caller, paramcls);
 			HashMap <String, AST.method> mthds = classData.classBlock.get(mthddsptch.caller.type).methodList;
 			if(!mthds.containsKey(mthddsptch.name)) { //test21.cl
 				String err = "Dispatch to undefined method " + mthddsptch.name + ".";
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				// System.out.println("error_dispatch_nomethod");
 				return "Object";
 			}
 			if(!(mthddsptch.actuals.size() == mthds.get(mthddsptch.name).formals.size())) { //test22.cl
 				String err = "Method " + mthddsptch.name + " called with wrong number of arguments.";
 				reportError(paramcls.filename, paramcls.lineNo, err);
-				////System.out.println("error_dispatch_diffparam");
 				return mthds.get(mthddsptch.name).typeid;
 			}
 			int size = mthddsptch.actuals.size();
 			for (int i = 0;i < size; i++) {
 				mthddsptch.actuals.get(i).type = AssignType((AST.ASTNode) mthddsptch.actuals.get(i), paramcls);
-				if(!mthddsptch.actuals.get(i).type.equals(mthds.get(mthddsptch.name).formals.get(i).typeid)) { //test23.cl
+				ClassBlock c1 = classData.classBlock.get(mthddsptch.actuals.get(i).type);
+				ClassBlock c2 = classData.classBlock.get(mthds.get(mthddsptch.name).formals.get(i).typeid);
+				if(!(c2 == leastCommonAncestor(c1, c2))) {
+				//if(!mthddsptch.actuals.get(i).type.equals(mthds.get(mthddsptch.name).formals.get(i).typeid)) { //test23.cl
 					String err = "In call of method " + mthddsptch.name + ", type " + mthddsptch.actuals.get(i).type + " of parameter "  + mthds.get(mthddsptch.name).formals.get(i).name + " does not conform to declared type " + mthds.get(mthddsptch.name).formals.get(i).typeid + ".";
 					reportError(paramcls.filename, paramcls.lineNo, err);
 					// System.out.println("error_dispatch_diffparamtype");
@@ -253,7 +331,7 @@ public class Semantic {
 			return mthds.get(mthddsptch.name).typeid;
 		}
 		else if(node instanceof AST.let) { //test24.cl
-			//System.out.println("entered_let");
+			System.out.println("entered_let");
 			AST.let mthdlet = (AST.let) node;
 			scopeTable.enterScope();
 			AST.localvar mthdletlv = new AST.localvar(mthdlet.typeid);
@@ -269,7 +347,7 @@ public class Semantic {
 			return mthdlet.body.type;
 		}
 		else if(node instanceof AST.static_dispatch) {
-			//System.out.println("entered_staticdispatch");
+			System.out.println("entered_staticdispatch");
 			AST.static_dispatch mthdstdsptch = (AST.static_dispatch) node;
 			HashMap <String, AST.method> mthds = classData.classBlock.get(mthdstdsptch.typeid).methodList;
 			mthdstdsptch.caller.type = AssignType((AST.ASTNode) mthdstdsptch.caller, paramcls);
@@ -303,7 +381,10 @@ public class Semantic {
 			int size = mthdstdsptch.actuals.size();
 			for (int i = 0;i < size; i++) {
 				mthdstdsptch.actuals.get(i).type = AssignType((AST.ASTNode) mthdstdsptch.actuals.get(i), paramcls);
-				if(!mthdstdsptch.actuals.get(i).type.equals(mthds.get(mthdstdsptch.name).formals.get(i).typeid)) { //test28.cl
+				ClassBlock c1 = classData.classBlock.get(mthdstdsptch.actuals.get(i).type);
+				ClassBlock c2 = classData.classBlock.get(mthds.get(mthdstdsptch.name).formals.get(i).typeid);
+				if(!(c2 == leastCommonAncestor(c1, c2))) {
+				//if(!mthdstdsptch.actuals.get(i).type.equals(mthds.get(mthdstdsptch.name).formals.get(i).typeid)) { //test28.cl
 					String err = "In call of method " + mthdstdsptch.name + ", type " + mthdstdsptch.actuals.get(i).type + " of parameter " + mthds.get(mthdstdsptch.name).formals.get(i).name +" does not conform to declared type " + mthds.get(mthdstdsptch.name).formals.get(i).typeid + ".";
 					reportError(paramcls.filename, paramcls.lineNo, err);
 					////System.out.println("error_staticdispatch_diffparamtype");
@@ -312,7 +393,7 @@ public class Semantic {
 			return mthds.get(mthdstdsptch.name).typeid;
 		}
 		else if(node instanceof AST.cond) {
-			//System.out.println("entered_cond");
+			System.out.println("entered_cond");
 			AST.cond mthdcond = (AST.cond) node;
 			mthdcond.predicate.type = AssignType((AST.ASTNode) mthdcond.predicate, paramcls);
 			mthdcond.ifbody.type = AssignType((AST.ASTNode) mthdcond.ifbody, paramcls);
@@ -325,29 +406,25 @@ public class Semantic {
 			return clsblck.cls.name;
 		}
 		else if(node instanceof AST.branch) {
-			//System.out.println("entered_branch");
-			AST.let mthdbranch = (AST.branch) node;
+			System.out.println("entered_branch");
+			AST.branch mthdbranch = (AST.branch) node;
 			scopeTable.enterScope();
-			AST.localvar mthdbranchlv = new AST.localvar(mthdbranch.typeid);
+			AST.localvar mthdbranchlv = new AST.localvar(mthdbranch.type);
 			scopeTable.insert(mthdbranch.name, (AST.ASTNode) mthdbranchlv);
 			mthdbranch.value.type = AssignType((AST.ASTNode) mthdbranch.value, paramcls);
-			if(!mthdbranch.value.type.equals(mthdbranch.typeid)) {
-				String err = "Inferred type " + mthdlet.value.type + " of initialization of " + mthdlet.name + " does not conform to identifier's declared type " + mthdlet.typeid + ".";
-				reportError(paramcls.filename, paramcls.lineNo, err);
-				////System.out.println("error_let");
-			}
-			mthdlet.body.type = AssignType((AST.ASTNode) mthdlet.body, paramcls);
 			scopeTable.exitScope();
-			return mthdlet.body.type;
+			return mthdbranch.value.type;
 		}
 		else if(node instanceof AST.typcase) {
-			//System.out.println("entered_typcase");
+			System.out.println("entered_typcase");
 			AST.typcase mthdtypcase = (AST.typcase) node;
 			mthdtypcase.predicate.type = AssignType((AST.ASTNode) mthdtypcase.predicate, paramcls);
+			mthdtypcase.branches.get(0).type = AssignType(mthdtypcase.branches.get(0), paramcls);
 			ClassBlock clsblck = classData.classBlock.get(mthdtypcase.branches.get(0).type);
 			for (AST.branch branch : mthdtypcase.branches) {
-				branch.type = AssignType(branch, paramcls);
-				leastCommonAncestor(clsblck, classData.classBlock.get(branch.type));
+				String a = AssignType(branch, paramcls);
+				System.out.println(a);
+				clsblck = leastCommonAncestor(clsblck, classData.classBlock.get(a));
 				
 			}
 			if (clsblck.level == 0)
@@ -356,24 +433,26 @@ public class Semantic {
 		}
 		else
 		{
-			//System.out.println("entered_const");
+			System.out.println("entered_const");
 			return ((AST.expression) node).type;
 		}
 	}
 
 	public Semantic(AST.program program) {
 		//Write Semantic analyzer code here
-		// Checks whether Inheritance Graph has cycle(s) and abort the program.
+		
+		this.program = program;
+		//	Checks whether Inheritance Graph has cycle(s).
 		inheritance = new InheritanceGraph(program);
 		if(errorFlag || inheritance.isCyclic()) {
 			return;
 		}
 
-		// Creating class block for the basic classes 
+		
+		//	Creating classblock for the basicclasses("IO","String","Int","Bool"). 
 		classData = new ClassData(inheritance.ClassReference);
-		// Creating class block for the remaining classes 
-
-
+		
+		//	Creating classblock for the remaining classes in AST.
 		boolean[] visited = new boolean[inheritance.class_size];
 		visited[0] = true;
 		visited[1] = true;
@@ -382,41 +461,71 @@ public class Semantic {
 					insertClasses(cls, visited);
 		}
 
-		//building ScopeTable
+		//	Building ScopeTable.
 		scopeTable = new ScopeTable<AST.ASTNode>();
 
+		// Traversing over all the classes to build the scope table.
 		for (AST.class_ cls : program.classes) {
 			if (!basicClasses.contains(cls.name)) {
 				scopeTable.insert(cls.name, (AST.ASTNode) cls);
 				scopeTable.enterScope();
+
+				//	Traversing over all the features in a class.
 				for (AST.feature clsft : cls.features) {
 					String name = "";
+
+					// If the feature is an attribute.
 					if (clsft instanceof AST.attr) {
 						name = ((AST.attr) clsft).name;
 						scopeTable.insert(name, (AST.ASTNode) clsft);
 						AST.attr attr = (AST.attr) clsft;
 						String attrid = attr.typeid;
+
+						System.out.println("NN");
+						//	Assigning type to the attribute.
 						attr.value.type = AssignType((AST.ASTNode) attr.value, cls);
-						if (!(attrid.equals(attr.value.type))) { //test33.cl
+						ClassBlock c1 = classData.classBlock.get(attrid);
+						ClassBlock c2 = classData.classBlock.get(attr.value.type);
+
+						// Checking if the assigned and declared types of attribute match. 
+						if (!(c1 == leastCommonAncestor(c1, c2))) {	//test33.cl
 							String err = "Inferred type " + attr.value.type + " of initialization of attribute " + attr.name + " does not conform to declared type " + attrid + ".";
 							reportError(cls.filename, cls.lineNo, err);
 						}
 					}
+
+					// If the feature is a method.
 					else {
 						name = ((AST.method) clsft).name;
 						scopeTable.insert(name, (AST.ASTNode) clsft);
 						AST.method mthd = (AST.method) clsft;
 						scopeTable.enterScope();
+
+						// Traversing over all the parameters of the method and inserting them into the ScopeTable.
 						for (AST.formal param : mthd.formals) {
 							scopeTable.insert(param.name, (AST.ASTNode) param);
 						}
 						//
 						String mthdid = mthd.typeid;
+
+						//	Assigning type to the method.
 						mthd.body.type = AssignType((AST.ASTNode) mthd.body, cls);
 						scopeTable.exitScope();
-						if (!(mthdid.equals(mthd.body.type))) {	//test34.cl
-							String err = "Inferred return type " + mthd.body.type + " of method " + name + " does not conform to declared return type " + mthdid + ".";
+
+						// Checking if the class has correctly declared method type.
+						if ( !mthdid.equals("Object") && !(program.classes.contains(inheritance.ClassReference.get(mthdid)))) {
+							String err = "Undefined return type " + mthdid + " in method "+ mthd.name + ".";
 							reportError(cls.filename, cls.lineNo, err);
+						}
+						else {
+							ClassBlock c1 = classData.classBlock.get(mthdid);
+							ClassBlock c2 = classData.classBlock.get(mthd.body.type);
+
+							// Checking if the assigned and declared types of method match. 
+							if (!(c1 == leastCommonAncestor(c1, c2))) {
+								String err = "Inferred return type " + mthd.body.type + " of method " + name + " does not conform to declared return type " + mthdid + ".";
+								reportError(cls.filename, cls.lineNo, err);
+							}
 						}
 					}
 				}
@@ -424,29 +533,28 @@ public class Semantic {
 			}
 		}
 
-		boolean check1 = false;
-		boolean check2 = false;
-		for (AST.class_ cls : program.classes) {
-			if (cls.name.equals("Main")) {
-				check1 = true;
-				for (AST.feature clsft : cls.features) {
-					if (clsft instanceof AST.method) {
-						AST.method newMthd = (AST.method) clsft;
-						if(newMthd.name.equals("main"))
-							check2 = true;
-					}
-				}
-			}
-		}
-
-		if(!check1) {	//test35.cl
+		// Checking whether Class 'Main' is defined.
+		if(!program.classes.contains(inheritance.ClassReference.get("Main"))) {
 			System.out.println("Class Main is not defined.");
 			errorFlag = true;
-			return;
 		}
-		else if(!check2) {	//test36.cl
-			System.out.println("Main method is not defined.");
-			errorFlag = true;
+
+		// Checking whether Method 'main' is defined in Class 'Main'.
+		else {
+			boolean check = false;
+			AST.class_ cls = inheritance.ClassReference.get("Main");
+			for (AST.feature clsft : cls.features) {
+				if (clsft instanceof AST.method) {
+					AST.method newMthd = (AST.method) clsft;
+					if (newMthd.name.equals("main"))
+						check = true;
+				}
+				
+			}
+			if (!check) {
+				System.out.println("No 'main' method in class Main.");
+				errorFlag = true;
+			}
 		}
 
 		program.classes.removeAll(Arrays.asList(inheritance.ClassReference.get("IO"),inheritance.ClassReference.get("String"),inheritance.ClassReference.get("Int"),inheritance.ClassReference.get("Bool")));
